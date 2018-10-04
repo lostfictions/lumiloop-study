@@ -8,9 +8,11 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "moduleResolution": "node",
+    "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "sourceMap": true,
+    "jsx": "react",
     "lib": [
       "es2018",
       "dom"

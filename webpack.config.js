@@ -11,11 +11,8 @@ module.exports = function(/** @type {{[key: string]: any}} */ env) {
     mode: "development",
     target: "web",
     devtool: "cheap-module-eval-source-map",
-    entry: [path.resolve(__dirname, "./src/index.ts")],
-    output: {
-      filename: "bundle.js",
-      path: path.resolve(__dirname, "./build")
-    },
+    entry: [path.resolve(__dirname, "./src/index.tsx")],
+    output: { filename: "bundle.js", path: path.resolve(__dirname, "./build") },
     resolve: { extensions: [".ts", ".tsx", ".js", ".jsx"] },
     plugins: [
       new ForkTsCheckerWebpackPlugin({
@@ -45,21 +42,36 @@ module.exports = function(/** @type {{[key: string]: any}} */ env) {
                   "@babel/preset-env",
                   { targets: { browsers: "last 2 Chrome versions, iOS 10" } }
                 ],
-                "@babel/preset-typescript"
+                "@babel/preset-typescript",
+                "@babel/preset-react"
+              ],
+              plugins: [
+                "@babel/plugin-syntax-dynamic-import",
+                ["@babel/plugin-proposal-decorators", { legacy: true }],
+                ["@babel/plugin-proposal-class-properties", { loose: true }],
+                "react-hot-loader/babel"
               ]
             }
           }
         },
         {
           test: /\.css$/,
-          use: ["style-loader", "css-loader"]
+          use: [
+            "style-loader",
+            {
+              loader: "css-loader",
+              options: {
+                sourceMap: true,
+                modules: true,
+                localIdentName: "[local]___[hash:base64:5]"
+              }
+            }
+          ]
         },
         {
           test: /\.(png|jpg|gif|svg|eot|ttf|woff|woff2|wav)$/,
           loader: "url-loader",
-          options: {
-            limit: 8192
-          }
+          options: { limit: 8192 }
         }
       ]
     }

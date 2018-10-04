@@ -1,0 +1,8 @@
+.container {
+  display: inline-block;
+  background-color: hsl(204, 95%, 85%);
+  border-radius: 6px;
+  margin: 10px;
+  padding: 10px;
+  color: #111;
+}
