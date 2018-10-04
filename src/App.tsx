@@ -3,14 +3,12 @@ import { hot } from "react-hot-loader";
 
 import Note from "./Note";
 
-const ac = new AudioContext();
-
 const scale = ["C3", "D3", "E3", "G3", "A4"];
 
-const App = () => (
+const App = ({ audioContext }: { audioContext: AudioContext }) => (
   <div>
     {scale.map(note => (
-      <Note audioContext={ac} note={note} key={note} />
+      <Note audioContext={audioContext} note={note} key={note} />
     ))}
   </div>
 );

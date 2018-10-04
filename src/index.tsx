@@ -5,7 +5,9 @@ import "./index.css";
 
 import App from "./App";
 
+const ac = new AudioContext();
+
 const root = document.createElement("div");
 document.body.appendChild(root);
 
-render(<App />, root);
+render(<App audioContext={ac} />, root);

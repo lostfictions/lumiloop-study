@@ -20,18 +20,27 @@ export default class Note extends React.Component<NoteProps> {
   @observable
   gain = 0.5;
 
+  @observable
+  pan = 0;
+
   @observable.shallow
   sources = [] as AudioBufferSourceNode[];
 
   gainNode!: GainNode;
+  pannerNode!: StereoPannerNode;
 
   componentDidMount() {
     this.fetchBuffer();
 
     const { audioContext } = this.props;
+
+    this.pannerNode = audioContext.createStereoPanner();
+    this.pannerNode.pan.value = this.pan;
+    this.pannerNode.connect(audioContext.destination);
+
     this.gainNode = audioContext.createGain();
     this.gainNode.gain.value = this.gain;
-    this.gainNode.connect(audioContext.destination);
+    this.gainNode.connect(this.pannerNode);
   }
 
   componentWillUnmount() {
@@ -40,6 +49,7 @@ export default class Note extends React.Component<NoteProps> {
       src.disconnect();
     });
     this.gainNode.disconnect();
+    this.pannerNode.disconnect();
   }
 
   fetchBuffer = async () => {
@@ -83,11 +93,16 @@ export default class Note extends React.Component<NoteProps> {
     this.gainNode.gain.value = this.gain;
   };
 
+  setPan = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    this.pan = parseFloat(ev.target.value);
+    this.pannerNode.pan.value = this.pan;
+  };
+
   render() {
     const { note } = this.props;
     return (
       <div className={container}>
-        <div>{note}</div>
+        <div>Note: {note}</div>
         {this.buffer ? (
           <>
             <button onClick={this.playNote}>▶️️</button>
@@ -104,6 +119,7 @@ export default class Note extends React.Component<NoteProps> {
           />
           <span>Loop</span>
         </div>
+        <div>Gain: {this.gain}</div>
         <div>
           <input
             type="range"
@@ -115,7 +131,18 @@ export default class Note extends React.Component<NoteProps> {
             step={0.01}
           />
         </div>
-        <div>Gain: {this.gain}</div>
+        <div>Pan: {this.pan}</div>
+        <div>
+          <input
+            type="range"
+            onChange={this.setPan}
+            onInput={this.setPan}
+            value={this.pan}
+            min={-1}
+            max={1}
+            step={0.01}
+          />
+        </div>
         <span>Voices: {this.sources.length}</span>
       </div>
     );
