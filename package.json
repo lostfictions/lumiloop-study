@@ -1,0 +1,40 @@
+{
+  "name": "lumiloop",
+  "private": true,
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "author": "s <https://github.com/lostfictions>",
+  "license": "AGPL-3.0",
+  "scripts": {
+    "start": "webpack-dev-server --env.development --hot",
+    "build": "webpack --colors --env.production",
+    "build-profile": "webpack --colors --env.development --json > stats.json",
+    "test": "run-s -l test:*",
+    "test:ts": "tsc --noEmit",
+    "test:eslint": "eslint ."
+  },
+  "devDependencies": {
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.0",
+    "@babel/preset-typescript": "^7.1.0",
+    "@types/webpack": "^4.4.14",
+    "@types/webpack-env": "^1.13.6",
+    "babel-loader": "^8.0.4",
+    "css-loader": "^1.0.0",
+    "eslint": "^5.6.1",
+    "eslint-config-prettier": "^3.1.0",
+    "eslint-plugin-typescript": "^0.12.0",
+    "file-loader": "^2.0.0",
+    "fork-ts-checker-webpack-plugin": "^0.4.9",
+    "html-webpack-plugin": "^3.2.0",
+    "npm-run-all": "^4.1.3",
+    "prettier": "^1.14.3",
+    "source-map-loader": "^0.2.4",
+    "style-loader": "^0.23.0",
+    "typescript": "^3.1.1",
+    "typescript-eslint-parser": "^19.0.2",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.9"
+  }
+}
