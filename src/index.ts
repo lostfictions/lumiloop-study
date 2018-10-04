@@ -1,5 +1,42 @@
 import "./index.css";
 
+const scale = ["C3", "D3", "E3", "G3", "A4"];
+
+const cello = require.context("../samples/Cello");
+
+const notes: { [note: string]: AudioBuffer } = {};
+
+(async () => {
+  const ac = new AudioContext();
+
+  await Promise.all(
+    scale.map(async note => {
+      const res = await fetch(cello(`./${note}.wav`));
+      const buff = await res.arrayBuffer();
+      const data = await ac.decodeAudioData(buff);
+
+      notes[note] = data;
+    })
+  );
+
+  Object.entries(notes).forEach(([note, buff]) => {
+    const b = document.createElement("button");
+    b.textContent = note;
+    document.body.appendChild(b);
+
+    b.onclick = () => {
+      const src = ac.createBufferSource();
+      src.buffer = buff;
+      const gain = ac.createGain();
+      gain.gain.value = 0.5;
+      src.connect(gain);
+      gain.connect(ac.destination);
+      src.start();
+    };
+  });
+})();
+
+/*
 const canvasEl = document.createElement("canvas");
 document.body.appendChild(canvasEl);
 
@@ -34,3 +71,4 @@ function draw(t: number) {
 }
 
 requestAnimationFrame(draw);
+ */

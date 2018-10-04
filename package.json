@@ -6,7 +6,7 @@
   "author": "s <https://github.com/lostfictions>",
   "license": "AGPL-3.0",
   "scripts": {
-    "start": "webpack-dev-server --env.development --hot",
+    "start": "webpack-dev-server --env.development --hot --open",
     "build": "webpack --colors --env.production",
     "build-profile": "webpack --colors --env.development --json > stats.json",
     "test": "run-s -l test:*",
@@ -33,6 +33,7 @@
     "style-loader": "^0.23.0",
     "typescript": "^3.1.1",
     "typescript-eslint-parser": "^19.0.2",
+    "url-loader": "^1.1.1",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.9"

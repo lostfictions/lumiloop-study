@@ -55,10 +55,10 @@ module.exports = function(/** @type {{[key: string]: any}} */ env) {
           use: ["style-loader", "css-loader"]
         },
         {
-          test: /\.(png|jpg|gif|svg|eot|ttf|woff|woff2)$/,
+          test: /\.(png|jpg|gif|svg|eot|ttf|woff|woff2|wav)$/,
           loader: "url-loader",
           options: {
-            limit: 10000
+            limit: 8192
           }
         }
       ]
