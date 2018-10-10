@@ -18,7 +18,8 @@
     "mobx-react": "^5.2.8",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
-    "react-hot-loader": "^4.3.11"
+    "react-hot-loader": "^4.3.11",
+    "react-responsive": "^5.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",
@@ -29,6 +30,7 @@
     "@babel/preset-react": "^7.0.0",
     "@babel/preset-typescript": "^7.1.0",
     "@types/react-dom": "^16.0.8",
+    "@types/react-responsive": "^3.0.2",
     "@types/webpack": "^4.4.14",
     "@types/webpack-env": "^1.13.6",
     "babel-loader": "^8.0.4",

@@ -7,6 +7,8 @@ import { container } from "./Note.css";
 interface NoteProps {
   audioContext: AudioContext;
   note: string;
+  vert: "t" | "b" | "m";
+  horiz: "l" | "r" | "c";
 }
 
 @observer
