@@ -6,3 +6,4 @@ yarn-error.log
 
 # Project-specific
 samples/*/
+build/

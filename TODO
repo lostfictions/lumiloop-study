@@ -1,1 +1,20 @@
+- 5-up positioning (...grid...?)
+
+- octave rings
+
+- webpack/html fixes
+    - extract css
+
 - verify works with chrome autoplay policy!
+
+- correct gesture controls / verify mouseup
+    - and/or implement multitouch
+
+- polyfill
+    --> web audio standard api
+    --> fetch
+    --> anything else?
+
+- fix sample gaps
+
+- make it look nicer

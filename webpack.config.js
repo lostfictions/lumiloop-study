@@ -19,7 +19,11 @@ module.exports = function(/** @type {{[key: string]: any}} */ env) {
         tsconfig: path.resolve(__dirname, "./tsconfig.json")
       }),
       new HtmlWebpackPlugin({
-        title: "lumiloop study"
+        title: "lumiloop study",
+        meta: {
+          viewport:
+            "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        }
       })
     ],
     module: {

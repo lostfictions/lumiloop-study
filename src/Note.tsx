@@ -6,6 +6,8 @@ import { sinasc, sindesc, map01, map, clamp } from "./helpers";
 
 import { wrapper, note, eye, pupil } from "./Note.css";
 
+const choirSamples = require.context("../samples/Choir");
+
 const ACCEL = 0.2;
 const DECEL = 0.996;
 const MAX_VEL = 200;
@@ -14,7 +16,7 @@ async function fetchSample(
   noteName: string,
   audioContext: AudioContext
 ): Promise<AudioBuffer> {
-  const { default: filename } = await import(`../samples/${noteName}.wav`);
+  const filename = choirSamples(`./${noteName}.wav`);
   const res = await fetch(filename);
   const buff = await res.arrayBuffer();
   return audioContext.decodeAudioData(buff);
@@ -105,7 +107,7 @@ export default class Note extends React.Component<NoteProps> {
     const { samples, audioContext } = this.props;
 
     const audioBuffers = await Promise.all(
-      samples.map(s => fetchSample(`Choir/${s}`, audioContext))
+      samples.map(s => fetchSample(s, audioContext))
     );
 
     const loadedSamples = audioBuffers.map(ab => new Sample(audioContext, ab));
