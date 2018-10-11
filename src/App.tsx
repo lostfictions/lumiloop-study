@@ -14,15 +14,19 @@ const App = ({ audioContext }: { audioContext: AudioContext }) => (
             <WindowSize>
               {({ width, height }) => {
                 const min = Math.min(width, height);
+
+                const outer = min * 0.2;
+                const inner = outer * 0.6;
+
                 return (
                   <Note
                     audioContext={audioContext}
                     color="#39f"
-                    note="D"
+                    samples={["D3", "D4", "D5"]}
                     horiz="c"
                     vert="m"
-                    outerRadius={min * 0.8}
-                    innerRadius={min * 0.8 * 0.6}
+                    outerRadius={outer}
+                    innerRadius={inner}
                   />
                 );
               }}
@@ -42,7 +46,7 @@ const App = ({ audioContext }: { audioContext: AudioContext }) => (
                     <Note
                       audioContext={audioContext}
                       color="#f39"
-                      note="A"
+                      samples={["A2", "A3", "A4"]}
                       horiz="l"
                       vert="t"
                       outerRadius={outer}
@@ -51,7 +55,7 @@ const App = ({ audioContext }: { audioContext: AudioContext }) => (
                     <Note
                       audioContext={audioContext}
                       color="#39f"
-                      note="D"
+                      samples={["D3", "D4", "D5"]}
                       horiz="c"
                       vert="m"
                       outerRadius={outer}
@@ -60,7 +64,7 @@ const App = ({ audioContext }: { audioContext: AudioContext }) => (
                     <Note
                       audioContext={audioContext}
                       color="#3f9"
-                      note="C"
+                      samples={["C3", "C4", "C5"]}
                       horiz="l"
                       vert="b"
                       outerRadius={outer}
@@ -69,7 +73,7 @@ const App = ({ audioContext }: { audioContext: AudioContext }) => (
                     <Note
                       audioContext={audioContext}
                       color="#f93"
-                      note="E"
+                      samples={["E3", "E4", "E5"]}
                       horiz="r"
                       vert="t"
                       outerRadius={outer}
@@ -78,7 +82,7 @@ const App = ({ audioContext }: { audioContext: AudioContext }) => (
                     <Note
                       audioContext={audioContext}
                       color="#93f"
-                      note="G"
+                      samples={["G2", "G3", "G4"]}
                       horiz="r"
                       vert="b"
                       outerRadius={outer}

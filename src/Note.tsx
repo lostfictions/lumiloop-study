@@ -2,9 +2,12 @@ import React from "react";
 import { observable, action } from "mobx";
 import { observer } from "mobx-react";
 
-import { wrapper } from "./Note.css";
+import { sinasc, sindesc, map01, map, clamp } from "./helpers";
 
-const ACCEL = 0.02;
+import { wrapper, note, eye, pupil } from "./Note.css";
+
+const ACCEL = 0.2;
+const DECEL = 0.996;
 const MAX_VEL = 200;
 
 async function fetchSample(
@@ -17,53 +20,9 @@ async function fetchSample(
   return audioContext.decodeAudioData(buff);
 }
 
-function map(
-  val: number,
-  fromMin: number,
-  fromMax: number,
-  toMin: number,
-  toMax: number
-): number {
-  //normalize val to 0..1 range
-  val = (val - fromMin) / (fromMax - fromMin);
-  //then map to other domain
-  return val * (toMax - toMin) + toMin;
-}
-
-function map01(val: number, fromMin: number, fromMax: number): number {
-  //normalize val to 0..1 range
-  return (val - fromMin) / (fromMax - fromMin);
-}
-
-function clamp(val: number, min: number, max: number): number {
-  if (val < min) return min;
-  if (val > max) return max;
-  return val;
-}
-
-// -0.5 => 0
-//    0 => 1
-//  0.5 => 0
-function sinmid(value: number) {
-  return (Math.sin((value + 0.25) * (2 * Math.PI)) + 1) / 2;
-}
-
-// -1 => 0
-//  0 => 1
-//  1 => 0
-function sindesc(value: number): number {
-  return (Math.sin((value + 0.5) * Math.PI) + 1) / 2;
-}
-
-// -1 => 1
-//  0 => 0
-//  1 => 1
-function sinasc(value: number): number {
-  return (Math.sin((value + 1.5) * Math.PI) + 1) / 2;
-}
-
 const intervals = [1 / 6, 2 / 6, 3 / 6, 4 / 6, 5 / 6];
 
+/** Takes a value in the interval [0, 1] */
 function getGainSet(value: number): [number, number, number] {
   if (value < intervals[0]) {
     return [sinasc(map01(value, 0, intervals[0])), 0, 0];
@@ -83,15 +42,13 @@ function getGainSet(value: number): [number, number, number] {
       sindesc(map01(value, intervals[3], intervals[4])),
       sinasc(map01(value, intervals[3], intervals[4]))
     ];
-  } else if (value < 1) {
-    return [0, 0, 1];
   }
-  throw new Error("Input value out of range");
+  return [0, 0, 1];
 }
 
 interface NoteProps {
   audioContext: AudioContext;
-  note: string;
+  samples: [string, string, string];
   color: string;
   outerRadius: number;
   innerRadius: number;
@@ -99,35 +56,9 @@ interface NoteProps {
   horiz: "l" | "r" | "c";
 }
 
-class Sample {
-  source: AudioBufferSourceNode;
-  gain: GainNode;
-  constructor(ctx: AudioContext, sample: AudioBuffer) {
-    this.source = ctx.createBufferSource();
-    this.source.buffer = sample;
-    this.source.loop = true;
-    this.gain = ctx.createGain();
-    this.gain.gain.value = 0;
-    this.source.connect(this.gain);
-    this.source.start();
-  }
-
-  cleanup() {
-    this.source.stop();
-    this.source.disconnect();
-    this.source = null as any;
-    this.gain.disconnect();
-    this.gain = null as any;
-  }
-}
-
 @observer
 export default class Note extends React.Component<NoteProps> {
-  @observable.ref
   samples: Sample[] | null = null;
-
-  @observable
-  loop = true;
 
   gainNode!: GainNode;
   pannerNode!: StereoPannerNode;
@@ -141,8 +72,6 @@ export default class Note extends React.Component<NoteProps> {
   velocity = 0;
 
   componentDidMount() {
-    this.fetchBuffers();
-
     const { audioContext } = this.props;
 
     this.pannerNode = audioContext.createStereoPanner();
@@ -153,36 +82,10 @@ export default class Note extends React.Component<NoteProps> {
     this.gainNode.gain.value = 0.5;
     this.gainNode.connect(this.pannerNode);
 
+    this.fetchBuffers();
+
     this.rafId = requestAnimationFrame(this.update);
   }
-
-  @action
-  update = () => {
-    if (this.pointerIsDown) {
-      this.velocity = clamp(this.velocity + ACCEL, 0, MAX_VEL);
-    } else {
-      this.velocity *= 0.9998;
-      if (this.velocity < 0.0000001) {
-        this.velocity = 0;
-      }
-    }
-
-    this.angle += this.velocity;
-
-    this.gainNode.gain.value = map(this.velocity, 0, MAX_VEL, 0, 1);
-
-    if (this.samples) {
-      const [g0, g1, g2] = getGainSet(
-        map01(clamp(this.velocity, 0, MAX_VEL), 0, MAX_VEL)
-      );
-
-      this.samples![0].gain.gain.value = g0;
-      this.samples![1].gain.gain.value = g1;
-      this.samples![2].gain.gain.value = g2;
-    }
-
-    this.rafId = requestAnimationFrame(this.update);
-  };
 
   componentWillUnmount() {
     cancelAnimationFrame(this.rafId);
@@ -199,29 +102,59 @@ export default class Note extends React.Component<NoteProps> {
   }
 
   fetchBuffers = async () => {
-    const { note, audioContext } = this.props;
-    this.samples = [
-      new Sample(
-        audioContext,
-        await fetchSample(`Choir/${note}3`, audioContext)
-      ),
-      new Sample(
-        audioContext,
-        await fetchSample(`Choir/${note}4`, audioContext)
-      ),
-      new Sample(
-        audioContext,
-        await fetchSample(`Choir/${note}5`, audioContext)
-      )
-    ];
+    const { samples, audioContext } = this.props;
 
-    this.samples.forEach(sample => sample.gain.connect(this.gainNode));
+    const audioBuffers = await Promise.all(
+      samples.map(s => fetchSample(`Choir/${s}`, audioContext))
+    );
+
+    const loadedSamples = audioBuffers.map(ab => new Sample(audioContext, ab));
+
+    if (this.gainNode) {
+      loadedSamples.forEach(sample => sample.gain.connect(this.gainNode));
+      this.samples = loadedSamples;
+    } else {
+      console.log("Component unmounted while loading samples. Cancelling...");
+      loadedSamples.forEach(sample => sample.cleanup());
+    }
+  };
+
+  @action
+  update = () => {
+    if (this.pointerIsDown) {
+      this.velocity = clamp(this.velocity + ACCEL, 0, MAX_VEL);
+    } else {
+      this.velocity *= DECEL;
+      if (this.velocity < 0.0000001) {
+        this.velocity = 0;
+      }
+    }
+
+    this.angle += this.velocity;
+
+    this.gainNode.gain.value = map(this.velocity, 0, MAX_VEL, 0, 1);
+
+    if (this.samples) {
+      const [g0, g1, g2] = getGainSet(
+        map01(clamp(this.velocity, 0, MAX_VEL), 0, MAX_VEL)
+      );
+
+      this.samples[0].gain.gain.value = g0;
+      this.samples[1].gain.gain.value = g1;
+      this.samples[2].gain.gain.value = g2;
+    }
+
+    this.rafId = requestAnimationFrame(this.update);
   };
 
   pointerIsDown = false;
 
   mouseDown = () => {
     if (!this.pointerIsDown) {
+      // this is meaningless and confusing but i guess might make audio continue
+      // to work in chrome if they still decide break the web with their
+      // nonstandard autoplay garbage
+      this.props.audioContext.resume();
       this.pointerIsDown = true;
     }
   };
@@ -243,13 +176,10 @@ export default class Note extends React.Component<NoteProps> {
       <>
         <div className={wrapper} style={{ justifyContent, alignItems }}>
           <div
+            className={note}
             onMouseDown={this.mouseDown}
             onMouseUp={this.mouseUp}
             style={{
-              pointerEvents: "auto",
-              cursor: "grab",
-              borderWidth: 50,
-              borderStyle: "solid",
               borderColor: color,
               borderRadius: outerRadius,
               height: innerRadius,
@@ -271,17 +201,42 @@ export default class Note extends React.Component<NoteProps> {
 class Eye extends React.PureComponent<{ side: "left" | "right" }> {
   render() {
     return (
-      <div
-        style={{
-          position: "absolute",
-          borderWidth: 20,
-          borderStyle: "solid",
-          borderColor: "#eee",
-          borderRadius: 20,
-          top: -40,
-          [this.props.side]: -20
-        }}
-      />
+      <>
+        <div
+          className={eye}
+          style={{
+            [this.props.side]: -20
+          }}
+        />
+        <div
+          className={pupil}
+          style={{
+            [this.props.side]: -20
+          }}
+        />
+      </>
     );
+  }
+}
+
+class Sample {
+  source: AudioBufferSourceNode;
+  gain: GainNode;
+  constructor(ctx: AudioContext, sample: AudioBuffer) {
+    this.source = ctx.createBufferSource();
+    this.source.buffer = sample;
+    this.source.loop = true;
+    this.gain = ctx.createGain();
+    this.gain.gain.value = 0;
+    this.source.connect(this.gain);
+    this.source.start();
+  }
+
+  cleanup() {
+    this.source.stop();
+    this.source.disconnect();
+    this.source = null as any;
+    this.gain.disconnect();
+    this.gain = null as any;
   }
 }
