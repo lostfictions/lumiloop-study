@@ -12,7 +12,7 @@ module.exports = function(/** @type {{[key: string]: any}} */ env) {
     target: "web",
     devtool: "cheap-module-eval-source-map",
     entry: [path.resolve(__dirname, "./src/index.tsx")],
-    output: { filename: "bundle.js", path: path.resolve(__dirname, "./build") },
+    output: { filename: "bundle.js", path: path.resolve(__dirname, "./docs") },
     resolve: { extensions: [".ts", ".tsx", ".js", ".jsx"] },
     plugins: [
       new ForkTsCheckerWebpackPlugin({
