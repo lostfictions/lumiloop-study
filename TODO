@@ -9,6 +9,9 @@
 
 - correct gesture controls / verify mouseup
     - and/or implement multitouch
+    --> on touchdown, associate touch with entity
+    --> on touchmove, check delta tangent and accelerate
+    --> on touchstay...? eg. update where touch wasn't moved beyond threshold...? decelerate
 
 - polyfill
     --> web audio standard api
